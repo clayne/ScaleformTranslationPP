@@ -16,10 +16,12 @@ This plugin enables native translation nesting present within SkyUI, as well as 
 * You can nest nested translations as well as mix in raw text:
 
 **MyTranslationFile_english.txt**  
->$HelloWorld{}	Hello {}!  
->$QuickBrownFox{}{}	The quick brown fox says "{}". {}.  
->$DeathAndTaxes{}{}	{} and {}  
->$Death	Death  
->$Taxes	Taxes  
+```
+$HelloWorld{}	Hello {}!
+$QuickBrownFox{}{}	The quick brown fox says "{}". {}.
+$DeathAndTaxes{}{}	{} and {}
+$Death	Death
+$Taxes	Taxes
+```
 
 By passing `$QUICKBROWNFOX{$HelloWorld{world}}{$DeathAndTaxes{Death}{$Taxes}}` to `Debug.Notification()`, we see `The quick brown fox says "Hello world!". Death and Taxes.` as a notification.
