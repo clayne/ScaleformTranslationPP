@@ -1,8 +1,15 @@
-# ScaleformTranslationPP
+# ScaleformTranslation++
 
 This plugin enables native translation nesting present within SkyUI, as well as English fallbacks
 
-## How to use
+## Build Dependencies
+* [SKSE64](https://skse.silverlock.org/)
+* [CommonLibSSE](https://github.com/SniffleMan/CommonLibSSE)
+
+## End User Dependencies
+* [SKSE64](https://skse.silverlock.org/)
+
+## How To Use
 * Create a translation file for your project just like you would as normal, i.e. `Data\interface\translations\skyui_se_english.txt` encoded in UCS-2 LE w/ BOM
 * Indicate a nested translation using `{}`, i.e. `$SKI_INFO7{}	Unequip all armor before Group Use?\nDefault: {}`
 * Pass translations between `{}` to nest them, i.e. `$SKI_INFO7{F3}` becomes `Unequip all armor before Group Use?\nDefault: F3`
