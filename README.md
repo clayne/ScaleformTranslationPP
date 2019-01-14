@@ -1,6 +1,6 @@
 # ScaleformTranslationPP
 
-Enables native translation nesting present within SkyUI, as well as English fallbacks
+This plugin enables native translation nesting present within SkyUI, as well as English fallbacks
 
 ## How to use
 * Create a translation file for your project just like you would as normal, i.e. `Data\interface\translations\skyui_se_english.txt` encoded in UCS-2 LE w/ BOM
