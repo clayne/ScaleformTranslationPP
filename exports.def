@@ -1,0 +1,4 @@
+LIBRARY	"ScaleformTranslationPP"
+EXPORTS
+SKSEPlugin_Query
+SKSEPlugin_Load
