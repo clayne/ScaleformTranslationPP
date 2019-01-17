@@ -26,6 +26,7 @@ LocaleManager* LocaleManager::GetSingleton()
 void LocaleManager::Free()
 {
 	delete _singleton;
+	_singleton = 0;
 }
 
 
@@ -68,6 +69,7 @@ void LocaleManager::LoadLocalizationStrings()
 
 void LocaleManager::InsertLocalizationString(std::wstring a_key, std::wstring a_value)
 {
+	wstring_compare::SetCIMode(false);
 	GetLocalizationMap().insert(std::make_pair(a_key, a_value));
 }
 
@@ -122,10 +124,23 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 }
 
 
-bool LocaleManager::ci_wstring_compare::operator()(const std::wstring& a_lhs, const std::wstring& a_rhs) const
+bool LocaleManager::wstring_compare::operator()(const std::wstring& a_lhs, const std::wstring& a_rhs) const
 {
-	return _wcsicmp(a_lhs.c_str(), a_rhs.c_str()) < 0;
+	if (_ciMode) {
+		return _wcsicmp(a_lhs.c_str(), a_rhs.c_str()) < 0;
+	} else {
+		return std::wcscmp(a_lhs.c_str(), a_rhs.c_str()) < 0;
+	}
 }
+
+
+void LocaleManager::wstring_compare::SetCIMode(bool a_enabled)
+{
+	_ciMode = a_enabled;
+}
+
+
+bool LocaleManager::wstring_compare::_ciMode = false;
 
 
 LocaleManager::Result::Result(bool a_good, std::wstring a_str) :
@@ -309,10 +324,10 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 LocaleManager::Result LocaleManager::FindLocalization(const std::wstring& a_key)
 {
 	LocalizationMap& localizations = GetLocalizationMap();
-	auto& it = localizations.find(a_key);
+	LocalizationMap::iterator it = SearchLocalizationMap(localizations, a_key);
 	if (it == localizations.end()) {
 		if (&localizations != &_localizations_ENG) {
-			it = _localizations_ENG.find(a_key);
+			it = SearchLocalizationMap(_localizations_ENG, a_key);
 			if (it == _localizations_ENG.end()) {
 				return { false, L"" };
 			}
@@ -321,6 +336,18 @@ LocaleManager::Result LocaleManager::FindLocalization(const std::wstring& a_key)
 		}
 	}
 	return { true, it->second };
+}
+
+
+LocaleManager::LocalizationMap::iterator LocaleManager::SearchLocalizationMap(LocalizationMap& a_localizationMap, const std::wstring& a_key)
+{
+	wstring_compare::SetCIMode(false);
+	LocalizationMap::iterator it = a_localizationMap.find(a_key);
+	if (it == a_localizationMap.end()) {
+		wstring_compare::SetCIMode(true);
+		it = a_localizationMap.find(a_key);
+	}
+	return it;
 }
 
 

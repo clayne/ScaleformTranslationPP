@@ -21,10 +21,14 @@ public:
 	std::string				ConvertWStringToString(const std::wstring& a_str);
 
 private:
-	class ci_wstring_compare
+	class wstring_compare
 	{
 	public:
-		bool operator()(const std::wstring& a_lhs, const std::wstring& a_rhs) const;
+		bool		operator()(const std::wstring& a_lhs, const std::wstring& a_rhs) const;
+		static void	SetCIMode(bool a_enabled);
+
+	private:
+		static bool _ciMode;
 	};
 
 
@@ -37,21 +41,22 @@ private:
 	};
 
 
-	typedef std::map<std::wstring, std::wstring, ci_wstring_compare> LocalizationMap;
+	typedef std::map<std::wstring, std::wstring, wstring_compare> LocalizationMap;
 	typedef std::wstring::size_type size_type;
 
 
 	LocaleManager();
 	~LocaleManager();
 
-	void				FindFiles(std::string a_path, const char* a_prefix, bool a_english);
-	void				ReadFromFile(const char* a_filePath, bool a_english);
-	LocalizationMap&	GetLocalizationMap();
-	std::wstring		GetLocalizationInternal(const std::wstring& a_key);
-	Result				GetKey(std::wstring a_key);
-	bool				GetNestedLocalizations(const std::wstring& a_key, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
-	Result				FindLocalization(const std::wstring& a_key);
-	bool				InsertLocalizations(std::wstring& a_localization, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
+	void						FindFiles(std::string a_path, const char* a_prefix, bool a_english);
+	void						ReadFromFile(const char* a_filePath, bool a_english);
+	LocalizationMap&			GetLocalizationMap();
+	std::wstring				GetLocalizationInternal(const std::wstring& a_key);
+	Result						GetKey(std::wstring a_key);
+	bool						GetNestedLocalizations(const std::wstring& a_key, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
+	Result						FindLocalization(const std::wstring& a_key);
+	LocalizationMap::iterator	SearchLocalizationMap(LocalizationMap& a_localizationMap, const std::wstring& a_key);
+	bool						InsertLocalizations(std::wstring& a_localization, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
 
 
 	static LocaleManager*	_singleton;
