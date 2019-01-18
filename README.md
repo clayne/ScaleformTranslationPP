@@ -24,4 +24,6 @@ $Death	Death
 $Taxes	Taxes
 ```
 
-By passing `$QUICKBROWNFOX{$HelloWorld{world}}{$DeathAndTaxes{Death}{$Taxes}}` to `Debug.Notification()`, we see `The quick brown fox says "Hello world!". Death and Taxes.` as a notification.
+By passing `$QuickBrownFox{$HelloWorld{world}}{$DeathAndTaxes{Death}{$Taxes}}` to `Debug.Notification()`, we see `The quick brown fox says "Hello world!". Death and Taxes.` as a notification.
+
+* Scaleform parses keys _case-sensitively_, however Papyrus strings are _case-insensitive_. Consider prefixing your keys to avoid collision.
