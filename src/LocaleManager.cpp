@@ -144,7 +144,8 @@ LocaleManager::Result::Result(bool a_good, std::wstring a_str) :
 {}
 
 
-LocaleManager::LocaleManager()
+LocaleManager::LocaleManager() :
+	_isLoaded(false)
 {}
 
 
