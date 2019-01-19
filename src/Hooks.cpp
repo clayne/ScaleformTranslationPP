@@ -19,18 +19,16 @@ public:
 	void Hook_Translate(TranslateInfo* a_translateInfo)
 	{
 		LocaleManager* locManager = LocaleManager::GetSingleton();
-
-		static bool loaded = false;
-		if (!loaded) {
-			for (auto& translation : translationTable) {
-				locManager->InsertLocalizationString(translation.GetKey(), translation.GetValue());
-			}
+		if (!locManager->LocalizationsLoaded()) {
+			locManager->LoadLocalizationMap(translationTable);
 			locManager->LoadLocalizationStrings();
-			loaded = true;
 		}
 
-		std::wstring localization = locManager->GetLocalization(a_translateInfo->GetKey());
-		a_translateInfo->SetResult(localization.data());
+		const wchar_t* key = a_translateInfo->GetKey();
+		if (key && key[0] == L'$') {
+			std::wstring localization = locManager->GetLocalization(key);
+			a_translateInfo->SetResult(localization.c_str());
+		}
 	}
 
 

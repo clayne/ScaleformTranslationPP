@@ -13,6 +13,8 @@
 #include <wchar.h>  // _wcsicmp
 #include <stringapiset.h>  // MultiByteToWideChar, WideCharToMultiByte
 
+#include "RE/BSScaleformTranslator.h"  // BSScaleformTranslator
+
 
 LocaleManager* LocaleManager::GetSingleton()
 {
@@ -64,12 +66,25 @@ void LocaleManager::LoadLocalizationStrings()
 		path += FILE_EXT;
 		FindFiles(path, PREFIX, true);
 	}
+
+	_isLoaded = true;
 }
 
 
-void LocaleManager::InsertLocalizationString(std::wstring a_key, std::wstring a_value)
+void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTable& a_translationTable)
 {
-	GetLocalizationMap().insert(std::make_pair(a_key, a_value));
+	LocalizationMap& localizations = GetLocalizationMap();
+	for (auto& entry : a_translationTable) {
+		localizations.insert(std::make_pair(entry.GetKey(), entry.GetValue()));
+	}
+
+	_isLoaded = true;
+}
+
+
+bool LocaleManager::LocalizationsLoaded() const
+{
+	return _isLoaded;
 }
 
 

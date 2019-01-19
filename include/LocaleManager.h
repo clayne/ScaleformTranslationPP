@@ -5,6 +5,8 @@
 #include <string>  // wstring, string
 #include <stack>  // stack
 
+#include "RE/BSScaleformTranslator.h"  // BSScaleformTranslator
+
 
 class LocaleManager
 {
@@ -13,7 +15,8 @@ public:
 	void					Free();
 	void					Dump();
 	void					LoadLocalizationStrings();
-	void					InsertLocalizationString(std::wstring a_key, std::wstring a_value);
+	void					LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTable& a_translationTable);
+	bool					LocalizationsLoaded() const;
 	std::wstring			GetLocalization(std::wstring a_key);
 	std::string				GetLocalization(std::string a_key);
 
@@ -50,4 +53,5 @@ private:
 	static LocaleManager*	_singleton;
 	LocalizationMap			_localizations_ENG;
 	LocalizationMap			_localizations_LOC;
+	bool					_isLoaded;
 };
