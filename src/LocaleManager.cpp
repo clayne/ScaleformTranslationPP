@@ -218,7 +218,7 @@ LocaleManager::LocalizationMap& LocaleManager::GetLocalizationMap()
 
 std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 {
-	if (a_key[0] != L'$') {
+	if (a_key.empty() || a_key[0] != L'$') {
 		return a_key;
 	}
 
@@ -279,6 +279,11 @@ LocaleManager::Result LocaleManager::GetKey(std::wstring a_key)
 			}
 		}
 	}
+
+	if (!a_key.empty() && a_key.back() == L'\r') {
+		a_key.pop_back();
+	}
+
 	return { true, a_key };
 }
 
