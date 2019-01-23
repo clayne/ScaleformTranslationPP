@@ -243,7 +243,8 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 	while (!stack.empty()) {
 		stack.pop();
 	}
-	return InsertLocalizations(localization, stack, queue) ? localization : a_key;
+	InsertLocalizations(localization, stack, queue);
+	return localization;
 }
 
 
@@ -336,6 +337,7 @@ LocaleManager::Result LocaleManager::FindLocalization(const std::wstring& a_key)
 			return { false, L"" };
 		}
 	}
+
 	return { true, it->second };
 }
 
