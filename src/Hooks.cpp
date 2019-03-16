@@ -34,9 +34,7 @@ public:
 
 	static void InstallHooks()
 	{
-		constexpr uintptr_t BS_SCALEFORM_TRANSLATOR_VTBL = 0x0017D0C30;  // 1_5_62
-
-		RelocPtr<_Translate_t*> vtbl_Translate(BS_SCALEFORM_TRANSLATOR_VTBL + (0x2 * 0x8));
+		RelocPtr<_Translate_t*> vtbl_Translate(RE::Offset::BSScaleformTranslator::Vtbl + (0x2 * 0x8));
 		orig_Translate = *vtbl_Translate;
 		SafeWrite64(vtbl_Translate.GetUIntPtr(), GetFnAddr(&Hook_Translate));
 
