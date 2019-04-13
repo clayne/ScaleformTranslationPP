@@ -7,43 +7,43 @@
 
 #include "LocaleManager.h"  // LocaleManager
 
-#include "RE/BSScaleformTranslator.h"  // BSScaleformTranslator
+#include "RE/Skyrim.h"
 
 
-class BSScaleformTranslatorEx : public RE::BSScaleformTranslator
+namespace
 {
-public:
-	typedef void _Translate_t(RE::BSScaleformTranslator* a_this, TranslateInfo* a_translateInfo);
-	static _Translate_t* orig_Translate;
-
-	void Hook_Translate(TranslateInfo* a_translateInfo)
+	class BSScaleformTranslatorEx : public RE::BSScaleformTranslator
 	{
-		LocaleManager* locManager = LocaleManager::GetSingleton();
-		if (!locManager->LocalizationsLoaded()) {
-			locManager->LoadLocalizationMap(translationTable);
-			locManager->LoadLocalizationStrings();
+	public:
+		using func_t = function_type_t<decltype(&BSScaleformTranslator::Translate)>;
+		inline static func_t* func = 0;
+
+		void Hook_Translate(TranslateInfo* a_translateInfo)
+		{
+			auto locManager = LocaleManager::GetSingleton();
+			if (!locManager->LocalizationsLoaded()) {
+				locManager->LoadLocalizationMap(translationTable);
+				locManager->LoadLocalizationStrings();
+			}
+
+			auto key = a_translateInfo->GetKey();
+			if (key && key[0] == L'$') {
+				std::wstring localization = locManager->GetLocalization(key);
+				a_translateInfo->SetResult(localization.c_str());
+			}
 		}
 
-		const wchar_t* key = a_translateInfo->GetKey();
-		if (key && key[0] == L'$') {
-			std::wstring localization = locManager->GetLocalization(key);
-			a_translateInfo->SetResult(localization.c_str());
+
+		static void InstallHooks()
+		{
+			REL::Offset<func_t**> vFunc(RE::Offset::BSScaleformTranslator::Vtbl + (0x2 * 0x8));
+			func = *vFunc;
+			SafeWrite64(vFunc.GetAddress(), GetFnAddr(&Hook_Translate));
+
+			_DMESSAGE("[DEBUG] Installed hooks for class (%s)", typeid(BSScaleformTranslatorEx).name());
 		}
-	}
-
-
-	static void InstallHooks()
-	{
-		RelocPtr<_Translate_t*> vtbl_Translate(RE::Offset::BSScaleformTranslator::Vtbl + (0x2 * 0x8));
-		orig_Translate = *vtbl_Translate;
-		SafeWrite64(vtbl_Translate.GetUIntPtr(), GetFnAddr(&Hook_Translate));
-
-		_DMESSAGE("[DEBUG] Installed hooks for class (%s)", typeid(BSScaleformTranslatorEx).name());
-	}
-};
-
-
-BSScaleformTranslatorEx::_Translate_t* BSScaleformTranslatorEx::orig_Translate;
+	};
+}
 
 
 void InstallHooks()

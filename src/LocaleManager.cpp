@@ -10,93 +10,15 @@
 #include <utility>  // make_pair
 #include <codecvt>  // codecvt_mode, codecvt_utf16
 
-#include <wchar.h>  // _wcsicmp
 #include <stringapiset.h>  // MultiByteToWideChar, WideCharToMultiByte
 
-#include "RE/BSScaleformTranslator.h"  // BSScaleformTranslator
+#include "RE/Skyrim.h"
 
 
 LocaleManager* LocaleManager::GetSingleton()
 {
-	if (!_singleton) {
-		_singleton = new LocaleManager();
-	}
-	return _singleton;
-}
-
-
-void LocaleManager::Free()
-{
-	delete _singleton;
-	_singleton = 0;
-}
-
-
-void LocaleManager::Dump()
-{
-	std::string key;
-	std::string value;
-	for (auto& pair : GetLocalizationMap()) {
-		key = ConvertWStringToString(pair.first);
-		value = ConvertWStringToString(pair.second);
-		_DMESSAGE("%s: %s", key.c_str(), value.c_str());
-	}
-}
-
-
-void LocaleManager::LoadLocalizationStrings()
-{
-	constexpr char* PREFIX = "Data\\interface\\translations\\";
-	constexpr char* ENGLISH = "ENGLISH";
-	constexpr char* FILE_EXT = ".txt";
-
-	Setting* language_general = GetINISetting("sLanguage:General");
-	std::string path = PREFIX;
-	path += "*_";
-	std::string language = (language_general && (language_general->GetType() == Setting::kType_String)) ? language_general->data.s : ENGLISH;
-	bool english = language == ENGLISH;
-	path += language;
-	path += FILE_EXT;
-
-	FindFiles(path, PREFIX, english);
-	if (!english) {
-		path = PREFIX;
-		path += "*_";
-		path += ENGLISH;
-		path += FILE_EXT;
-		FindFiles(path, PREFIX, true);
-	}
-
-	_isLoaded = true;
-}
-
-
-void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTable& a_translationTable)
-{
-	LocalizationMap& localizations = GetLocalizationMap();
-	for (auto& entry : a_translationTable) {
-		localizations.insert(std::make_pair(entry.GetKey(), entry.GetValue()));
-	}
-
-	_isLoaded = true;
-}
-
-
-bool LocaleManager::LocalizationsLoaded() const
-{
-	return _isLoaded;
-}
-
-
-std::wstring LocaleManager::GetLocalization(std::wstring a_key)
-{
-	return GetLocalizationInternal(a_key);
-}
-
-
-std::string LocaleManager::GetLocalization(std::string a_key)
-{
-	return ConvertWStringToString(GetLocalization(ConvertStringToWstring(a_key)));
+	static LocaleManager singleton;
+	return &singleton;
 }
 
 
@@ -138,6 +60,75 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 }
 
 
+void LocaleManager::Dump()
+{
+	std::string key;
+	std::string value;
+	for (auto& pair : GetLocalizationMap()) {
+		key = ConvertWStringToString(pair.first);
+		value = ConvertWStringToString(pair.second);
+		_DMESSAGE("%s: %s", key.c_str(), value.c_str());
+	}
+}
+
+
+void LocaleManager::LoadLocalizationStrings()
+{
+	constexpr char PREFIX[] = "Data\\interface\\translations\\";
+	constexpr char ENGLISH[] = "ENGLISH";
+	constexpr char FILE_EXT[] = ".txt";
+
+	auto general_language = GetINISetting("sLanguage:General");
+	std::string path = PREFIX;
+	path += "*_";
+	std::string language = (general_language && (general_language->GetType() == Setting::kType_String)) ? general_language->data.s : ENGLISH;
+	bool english = language == ENGLISH;
+	path += language;
+	path += FILE_EXT;
+
+	FindFiles(path, PREFIX, english);
+	if (!english) {
+		path = PREFIX;
+		path += "*_";
+		path += ENGLISH;
+		path += FILE_EXT;
+		FindFiles(path, PREFIX, true);
+	}
+
+	_isLoaded = true;
+}
+
+
+void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTable& a_translationTable)
+{
+	auto& localizations = GetLocalizationMap();
+	localizations.reserve(a_translationTable.size());
+	for (auto& entry : a_translationTable) {
+		localizations.insert({ entry.GetKey(), entry.GetValue() });
+	}
+
+	_isLoaded = true;
+}
+
+
+bool LocaleManager::LocalizationsLoaded() const
+{
+	return _isLoaded;
+}
+
+
+std::wstring LocaleManager::GetLocalization(std::wstring a_key)
+{
+	return GetLocalizationInternal(a_key);
+}
+
+
+std::string LocaleManager::GetLocalization(std::string a_key)
+{
+	return ConvertWStringToString(GetLocalization(ConvertStringToWstring(a_key)));
+}
+
+
 LocaleManager::Result::Result(bool a_good, std::wstring a_str) :
 	good(a_good),
 	str(a_str)
@@ -169,16 +160,14 @@ void LocaleManager::FindFiles(std::string a_path, const char* a_prefix, bool a_e
 }
 
 
-#pragma warning(push)
-#pragma warning(disable : 4996)  // codecvt deprecated in c++17
 void LocaleManager::ReadFromFile(const char* a_filePath, bool a_english)
 {
-	constexpr std::codecvt_mode cvtMode = std::codecvt_mode(std::little_endian | std::consume_header);
+	constexpr std::codecvt_mode CVT_MODE = std::codecvt_mode(std::little_endian | std::consume_header);
 	constexpr size_type NPOS = std::wstring::npos;
 
-	LocalizationMap& localizations = a_english ? _localizations_ENG : _localizations_LOC;
+	auto& localizations = a_english ? _localizations_ENG : _localizations_LOC;
 	std::wifstream inFile(a_filePath);
-	inFile.imbue(std::locale(inFile.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, cvtMode>));  // UCS-2 LE w/ BOM
+	inFile.imbue(std::locale(inFile.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, CVT_MODE>));  // UCS-2 LE w/ BOM
 	std::wstring line;
 	std::wstring key;
 	std::wstring value;
@@ -203,11 +192,10 @@ void LocaleManager::ReadFromFile(const char* a_filePath, bool a_english)
 		}
 
 		if (!key.empty() && !value.empty()) {
-			localizations.insert(std::make_pair(key, value));
+			localizations.insert({ key, value });
 		}
 	}
 }
-#pragma warning(pop)
 
 
 LocaleManager::LocalizationMap& LocaleManager::GetLocalizationMap()
@@ -222,13 +210,13 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 		return a_key;
 	}
 
-	Result result = GetKey(a_key);
+	auto result = GetKey(a_key);
 	if (!result.good) {
 		return a_key;
 	}
 	std::wstring key(result.str);
 
-	std::stack<size_t> stack;
+	std::stack<size_type> stack;
 	std::queue<std::wstring> queue;
 	if (!GetNestedLocalizations(a_key, stack, queue)) {
 		return a_key;
@@ -325,8 +313,8 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 
 LocaleManager::Result LocaleManager::FindLocalization(const std::wstring& a_key)
 {
-	LocalizationMap& localizations = GetLocalizationMap();
-	LocalizationMap::const_iterator it = localizations.find(a_key);
+	auto& localizations = GetLocalizationMap();
+	auto it = localizations.find(a_key);
 	if (it == localizations.end()) {
 		if (&localizations != &_localizations_ENG) {
 			it = _localizations_ENG.find(a_key);
@@ -369,6 +357,3 @@ bool LocaleManager::InsertLocalizations(std::wstring& a_localization, std::stack
 
 	return true;
 }
-
-
-LocaleManager* LocaleManager::_singleton = 0;

@@ -4,26 +4,20 @@
 #include <exception> // exception
 #include <locale>  // locale
 
-#include <ShlObj.h>  // CSIDL_MYDOCUMENTS
-
 #include <clocale>  // setlocale
+
+#include <ShlObj.h>  // CSIDL_MYDOCUMENTS
 
 #include "Hooks.h"  // InstallHooks
 #include "LocaleManager.h"  // LocaleManager
 #include "version.h"  // STPP_VERSION_MAJOR
 
-#include "RE/BSScaleformTranslator.h"  // BSScaleformTranslator
-#include "RE/GFxLoader.h"  // GFxLoader
-#include "RE/GFxStateBag.h"  // GFxStateBag
-
-
-static PluginHandle g_pluginHandle = kPluginHandle_Invalid;
-
-constexpr UInt32 SERIALIZATION_VERSION = 2;
+#include "SKSE/API.h"
+#include "RE/Skyrim.h"
 
 
 extern "C" {
-	bool SKSEPlugin_Query(const SKSEInterface* a_skse, PluginInfo* a_info)
+	bool SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 	{
 		std::setlocale(LC_ALL, "");
 
@@ -33,19 +27,15 @@ extern "C" {
 
 		_MESSAGE("ScaleformTranslationPP v%s", STPP_VERSION_VERSTRING);
 
-		a_info->infoVersion = PluginInfo::kInfoVersion;
+		a_info->infoVersion = SKSE::PluginInfo::kVersion;
 		a_info->name = "ScaleformTranslationPP";
 		a_info->version = STPP_VERSION_MAJOR;
 
-		g_pluginHandle = a_skse->GetPluginHandle();
-
-		if (a_skse->isEditor) {
+		if (a_skse->IsEditor()) {
 			_FATALERROR("[FATAL ERROR] Loaded in editor, marking as incompatible!\n");
 			return false;
-		}
-
-		if (a_skse->runtimeVersion != RUNTIME_VERSION_1_5_73) {
-			_FATALERROR("[FATAL ERROR] Unsupported runtime version %08X!\n", a_skse->runtimeVersion);
+		} else if (a_skse->RuntimeVersion() != RUNTIME_VERSION_1_5_73) {
+			_FATALERROR("[FATAL ERROR] Unsupported runtime version %08X!\n", a_skse->RuntimeVersion());
 			return false;
 		}
 
@@ -53,9 +43,13 @@ extern "C" {
 	}
 
 
-	bool SKSEPlugin_Load(const SKSEInterface* a_skse)
+	bool SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 	{
 		_MESSAGE("[MESSAGE] ScaleformTranslationPP loaded");
+
+		if (!SKSE::Init(a_skse)) {
+			return false;
+		}
 
 		InstallHooks();
 		_MESSAGE("[MESSAGE] Hooks installed");
