@@ -12,8 +12,8 @@
 #include "LocaleManager.h"  // LocaleManager
 #include "version.h"  // STPP_VERSION_MAJOR
 
-#include "SKSE/API.h"
 #include "RE/Skyrim.h"
+#include "SKSE/API.h"
 
 
 extern "C" {

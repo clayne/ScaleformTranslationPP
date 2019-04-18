@@ -167,14 +167,15 @@ void LocaleManager::ReadFromFile(const char* a_filePath, bool a_english)
 
 	auto& localizations = a_english ? _localizations_ENG : _localizations_LOC;
 	std::wifstream inFile(a_filePath);
-	inFile.imbue(std::locale(inFile.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, CVT_MODE>));  // UCS-2 LE w/ BOM
+	inFile.imbue(std::locale(inFile.getloc(), new std::codecvt_utf16<wchar_t, 0x10FFFF, CVT_MODE>));  // UCS-2 LE w/ BOM
 	std::wstring line;
 	std::wstring key;
 	std::wstring value;
 	if (!inFile.is_open()) {
-		_ERROR("[ERROR] Failed to open file \"%s\"", a_filePath);
+		_ERROR("[ERROR] Failed to open file \"%s\"!\n", a_filePath);
 		return;
 	}
+
 	while (std::getline(inFile, line)) {
 		if (!line.empty() && line.back() == L'\r') {
 			line.pop_back();  // discard carriage return
@@ -208,6 +209,9 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 {
 	if (a_key.empty() || a_key[0] != L'$') {
 		return a_key;
+	} else if (a_key.find(L"{0}") != std::wstring::npos) {	// skip insertions meant to be handled by SkyUI
+		auto result = FindLocalization(a_key);
+		return result.good ? result.str : a_key;
 	}
 
 	auto result = GetKey(a_key);
