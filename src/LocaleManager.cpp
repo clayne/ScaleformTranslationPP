@@ -1,7 +1,5 @@
 #include "LocaleManager.h"
 
-#include "skse64/GameSettings.h"  // Setting, GetINISetting
-
 #include <string>  // string, wstring
 #include <fstream>  // wifstream
 #include <map>  // map
@@ -78,10 +76,10 @@ void LocaleManager::LoadLocalizationStrings()
 	constexpr char ENGLISH[] = "ENGLISH";
 	constexpr char FILE_EXT[] = ".txt";
 
-	auto general_language = GetINISetting("sLanguage:General");
+	auto setting = RE::GetINISetting("sLanguage:General");
 	std::string path = PREFIX;
 	path += "*_";
-	std::string language = (general_language && (general_language->GetType() == Setting::kType_String)) ? general_language->data.s : ENGLISH;
+	std::string language = setting ? setting->GetString() : ENGLISH;
 	bool english = language == ENGLISH;
 	path += language;
 	path += FILE_EXT;
