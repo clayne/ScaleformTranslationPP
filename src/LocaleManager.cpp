@@ -145,15 +145,15 @@ LocaleManager::~LocaleManager()
 void LocaleManager::FindFiles(std::string a_path, const char* a_prefix, bool a_english)
 {
 	WIN32_FIND_DATA findData;
-	HANDLE hFind;
-
-	hFind = FindFirstFile(a_path.c_str(), &findData);
-	if (hFind != INVALID_HANDLE_VALUE) {
+	std::memset(&findData, 0, sizeof(findData));
+	auto handle = FindFirstFileExA(a_path.c_str(), FINDEX_INFO_LEVELS::FindExInfoBasic, &findData, FINDEX_SEARCH_OPS::FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH);
+	if (handle != INVALID_HANDLE_VALUE) {
 		do {
 			a_path = a_prefix;
 			a_path += findData.cFileName;
 			ReadFromFile(a_path.c_str(), a_english);
-		} while (FindNextFile(hFind, &findData));
+		} while (FindNextFile(handle, &findData));
+		FindClose(handle);
 	}
 }
 
