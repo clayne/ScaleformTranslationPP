@@ -185,12 +185,16 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 
 		auto pos = line.find_first_of(L'\t');
 		if (pos != NPOS) {
-			key = std::wstring(line, 0, pos);
-			value = std::wstring(line, pos + 1);
+			key = line.substr(0, pos);
+			value = line.substr(pos + 1);
 		}
 
 		if (!key.empty() && !value.empty()) {
-			localizations.insert({ key, value });
+			auto sanitizedKey = SanitizeKey(key);
+			if (sanitizedKey) {
+				key = std::move(*sanitizedKey);
+			}
+			localizations.insert({ std::move(key), std::move(value) });
 		}
 	}
 }
@@ -206,17 +210,14 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 {
 	if (a_key.empty() || a_key[0] != L'$') {
 		return a_key;
-	} else if (a_key.find(L"{0}") != std::wstring::npos) {	// skip insertions meant to be handled by SkyUI
-		auto localization = FindLocalization(a_key);
-		return localization ? *localization : a_key;
 	}
 
-	auto key = GetKey(a_key);
-	if (!key) {
+	auto sanitizedKey = SanitizeKey(a_key);
+	if (!sanitizedKey) {
 		return a_key;
 	}
 
-	auto localization = FindLocalization(*key);
+	auto localization = FindLocalization(*sanitizedKey);
 	if (!localization) {
 		return a_key;
 	}
@@ -235,7 +236,7 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 }
 
 
-std::optional<std::wstring> LocaleManager::GetKey(std::wstring a_key)
+std::optional<std::wstring> LocaleManager::SanitizeKey(std::wstring a_key)
 {
 	std::stack<size_type> stack;
 	for (size_type pos = 0; pos < a_key.size(); ++pos) {
@@ -294,8 +295,16 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 						a_stack.pop();
 						auto off = last + 1;
 						auto count = pos - last - 1;
-						if (count == 0) {
-							return false;
+						switch (count) {
+						case 0:
+							return false;	// nothing to replace {} with
+						case 1:
+							if (std::isdigit(a_key[off])) {	// intended for skyui
+								return false;
+							}
+							break;
+						default:
+							break;
 						}
 						auto subStr = a_key.substr(off, count);
 						a_queue.push(GetLocalizationInternal(subStr));

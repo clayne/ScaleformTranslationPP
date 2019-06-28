@@ -42,7 +42,7 @@ private:
 	void						ReadFromFile(const std::filesystem::path& a_path, bool a_english);
 	LocalizationMap&			GetLocalizationMap();
 	std::wstring				GetLocalizationInternal(const std::wstring& a_key);
-	std::optional<std::wstring>	GetKey(std::wstring a_key);
+	std::optional<std::wstring>	SanitizeKey(std::wstring a_key);
 	bool						GetNestedLocalizations(const std::wstring& a_key, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
 	std::optional<std::wstring>	FindLocalization(const std::wstring& a_key);
 	bool						InsertLocalizations(std::wstring& a_localization, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
