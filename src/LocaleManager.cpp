@@ -1,15 +1,12 @@
 #include "LocaleManager.h"
 
-#include <string.h>  // _wcsicmp
-#include <stringapiset.h>  // MultiByteToWideChar, WideCharToMultiByte
-
-#include <codecvt>  // codecvt_mode, codecvt_utf16
-#include <filesystem>  // path, directory_iterator
-#include <fstream>  // wifstream
-#include <queue>  // queue
-#include <regex>  // regex, regex_match
-#include <stack>  // stack
-#include <string>  // string, wstring
+#include <codecvt>
+#include <filesystem>
+#include <fstream>
+#include <queue>
+#include <regex>
+#include <stack>
+#include <string>
 
 #include "RE/Skyrim.h"
 
@@ -27,13 +24,19 @@ std::wstring LocaleManager::ConvertStringToWstring(const std::string& a_str)
 		return std::wstring();
 	}
 
-	int numChars = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), NULL, 0);
-	std::wstring wstrTo;
-	if (numChars) {
-		wstrTo.resize(numChars);
-		if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), wstrTo.data(), numChars)) {
-			return wstrTo;
+	auto size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), NULL, 0);
+	bool err = size == 0;
+	if (!err) {
+		std::wstring strTo;
+		strTo.resize(size);
+		err = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), strTo.data(), size) == 0;
+		if (!err) {
+			return strTo;
 		}
+	}
+
+	if (err) {
+		_ERROR("MultiByteToWideChar failed with error code (%i)", GetLastError());
 	}
 
 	return std::wstring();
@@ -46,13 +49,19 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 		return std::string();
 	}
 
-	int numChars = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), NULL, 0, NULL, NULL);
-	std::string strTo;
-	if (numChars) {
-		strTo.resize(numChars);
-		if (WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), strTo.data(), numChars, NULL, NULL)) {
+	auto size = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), NULL, 0, NULL, NULL);
+	bool err = size == 0;
+	if (!err) {
+		std::string strTo;
+		strTo.resize(size);
+		err = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), strTo.data(), size, NULL, NULL) == 0;
+		if (!err) {
 			return strTo;
 		}
+	}
+
+	if (err) {
+		_ERROR("WideCharToMultiByte failed with error code (%i)", GetLastError());
 	}
 
 	return std::string();
@@ -110,8 +119,17 @@ void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTa
 {
 	auto& localizations = GetLocalizationMap();
 	localizations.reserve(a_translationTable.size());
+	std::wstring key;
+	std::wstring value;
+	std::optional<std::wstring> sanitizedKey;
 	for (auto& entry : a_translationTable) {
-		localizations.insert({ entry.GetKey(), entry.GetValue() });
+		key = entry.GetKey();
+		sanitizedKey = SanitizeKey(key);
+		if (sanitizedKey) {
+			key = std::move(*sanitizedKey);
+		}
+		value = entry.GetValue();
+		localizations.insert({ std::move(key), std::move(value) });
 	}
 
 	_isLoaded = true;
@@ -132,7 +150,9 @@ std::wstring LocaleManager::GetLocalization(std::wstring a_key)
 
 std::string LocaleManager::GetLocalization(std::string a_key)
 {
-	return ConvertWStringToString(GetLocalization(ConvertStringToWstring(a_key)));
+	auto str = ConvertStringToWstring(a_key);
+	str = GetLocalization(str);
+	return ConvertWStringToString(str);
 }
 
 
@@ -147,6 +167,11 @@ LocaleManager::~LocaleManager()
 
 void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
 {
+	std::error_code err;
+	if (!std::filesystem::exists(a_path, err)) {
+		return;
+	}
+
 	std::filesystem::path fileName;
 	for (auto& dirEntry : std::filesystem::directory_iterator(a_path)) {
 		fileName = dirEntry.path().filename();

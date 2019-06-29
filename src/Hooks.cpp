@@ -1,11 +1,10 @@
 #include "Hooks.h"
 
-#include "skse64_common/Relocation.h"  // RelocPtr
-#include "skse64_common/SafeWrite.h"  // SafeWrite64
+#include "skse64_common/SafeWrite.h"
 
-#include <typeinfo>  // typeid
+#include <typeinfo>
 
-#include "LocaleManager.h"  // LocaleManager
+#include "LocaleManager.h"
 
 #include "RE/Skyrim.h"
 
@@ -38,7 +37,7 @@ namespace
 		{
 			REL::Offset<func_t**> vFunc(RE::Offset::BSScaleformTranslator::Vtbl + (0x2 * 0x8));
 			func = *vFunc;
-			SafeWrite64(vFunc.GetAddress(), GetFnAddr(&Hook_Translate));
+			SafeWrite64(vFunc.GetAddress(), unrestricted_cast<std::uintptr_t>(&Hook_Translate));
 
 			_DMESSAGE("[DEBUG] Installed hooks for class (%s)", typeid(BSScaleformTranslatorEx).name());
 		}

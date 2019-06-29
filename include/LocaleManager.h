@@ -1,12 +1,12 @@
 #pragma once
 
-#include <filesystem>  // path
-#include <optional>  // optional
-#include <queue>  // queue
-#include <regex>  // wregex
-#include <stack>  // stack
-#include <string>  // wstring, string
-#include <unordered_map>  // unordered_map
+#include <filesystem>
+#include <optional>
+#include <queue>
+#include <regex>
+#include <stack>
+#include <string>
+#include <unordered_map>
 
 #include "RE/Skyrim.h"
 
