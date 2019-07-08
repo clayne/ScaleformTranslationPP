@@ -194,7 +194,7 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	std::wstring key;
 	std::wstring value;
 	if (!inFile.is_open()) {
-		_ERROR("[ERROR] Failed to open file \"%s\"!\n", a_path.string().c_str());
+		_ERROR("Failed to open file \"%s\"!\n", a_path.string().c_str());
 		return;
 	}
 

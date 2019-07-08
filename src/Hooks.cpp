@@ -39,7 +39,7 @@ namespace
 			func = *vFunc;
 			SafeWrite64(vFunc.GetAddress(), unrestricted_cast<std::uintptr_t>(&Hook_Translate));
 
-			_DMESSAGE("[DEBUG] Installed hooks for class (%s)", typeid(BSScaleformTranslatorEx).name());
+			_DMESSAGE("Installed hooks for class (%s)", typeid(BSScaleformTranslatorEx).name());
 		}
 	};
 }
