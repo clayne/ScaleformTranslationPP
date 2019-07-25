@@ -123,12 +123,12 @@ void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTa
 	std::wstring value;
 	std::optional<std::wstring> sanitizedKey;
 	for (auto& entry : a_translationTable) {
-		key = entry.GetKey();
+		key = entry.first;
 		sanitizedKey = SanitizeKey(key);
 		if (sanitizedKey) {
 			key = std::move(*sanitizedKey);
 		}
-		value = entry.GetValue();
+		value = entry.second;
 		localizations.insert({ std::move(key), std::move(value) });
 	}
 
