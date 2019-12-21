@@ -18,6 +18,9 @@
     <ClCompile Include="src\LocaleManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Events.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\Hooks.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -27,6 +30,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\LocaleManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Events.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Hooks.h">

@@ -11,13 +11,6 @@
 #include "RE/Skyrim.h"
 
 
-LocaleManager* LocaleManager::GetSingleton()
-{
-	static LocaleManager singleton;
-	return &singleton;
-}
-
-
 std::wstring LocaleManager::ConvertStringToWstring(const std::string& a_str)
 {
 	if (a_str.empty()) {
@@ -68,6 +61,25 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 }
 
 
+LocaleManager::LocaleManager(const RE::BSScaleformTranslator::TranslationTable& a_translationTable) :
+	_localizations_ENG(),
+	_localizations_LOC()
+{
+	LoadLocalizationMap(a_translationTable);
+	LoadLocalizationStrings();
+}
+
+
+void LocaleManager::Translate(TranslateInfo* a_translateInfo)
+{
+	auto key = a_translateInfo->GetKey();
+	if (key && key[0] == L'$') {
+		auto localization = GetLocalization(key);
+		a_translateInfo->SetResult(localization.c_str(), localization.length());
+	}
+}
+
+
 void LocaleManager::Dump()
 {
 	std::string key;
@@ -77,6 +89,20 @@ void LocaleManager::Dump()
 		value = ConvertWStringToString(pair.second);
 		_DMESSAGE("%s: %s", key.c_str(), value.c_str());
 	}
+}
+
+
+std::wstring LocaleManager::GetLocalization(std::wstring a_key)
+{
+	return GetLocalizationInternal(a_key);
+}
+
+
+std::string LocaleManager::GetLocalization(std::string a_key)
+{
+	auto str = ConvertStringToWstring(a_key);
+	str = GetLocalization(str);
+	return ConvertWStringToString(str);
 }
 
 
@@ -110,12 +136,10 @@ void LocaleManager::LoadLocalizationStrings()
 		regex.assign(pattern, REGEX_FLAGS);
 		FindFiles(path, regex, true);
 	}
-
-	_isLoaded = true;
 }
 
 
-void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTable& a_translationTable)
+void LocaleManager::LoadLocalizationMap(const RE::BSScaleformTranslator::TranslationTable& a_translationTable)
 {
 	auto& localizations = GetLocalizationMap();
 	localizations.reserve(a_translationTable.size());
@@ -131,38 +155,7 @@ void LocaleManager::LoadLocalizationMap(RE::BSScaleformTranslator::TranslationTa
 		value = entry.second;
 		localizations.insert({ std::move(key), std::move(value) });
 	}
-
-	_isLoaded = true;
 }
-
-
-bool LocaleManager::LocalizationsLoaded() const
-{
-	return _isLoaded;
-}
-
-
-std::wstring LocaleManager::GetLocalization(std::wstring a_key)
-{
-	return GetLocalizationInternal(a_key);
-}
-
-
-std::string LocaleManager::GetLocalization(std::string a_key)
-{
-	auto str = ConvertStringToWstring(a_key);
-	str = GetLocalization(str);
-	return ConvertWStringToString(str);
-}
-
-
-LocaleManager::LocaleManager() :
-	_isLoaded(false)
-{}
-
-
-LocaleManager::~LocaleManager()
-{}
 
 
 void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
@@ -219,7 +212,7 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 			if (sanitizedKey) {
 				key = std::move(*sanitizedKey);
 			}
-			localizations.insert({ std::move(key), std::move(value) });
+			localizations.insert(std::make_pair(std::move(key), std::move(value)));
 		}
 	}
 }
@@ -320,16 +313,8 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 						a_stack.pop();
 						auto off = last + 1;
 						auto count = pos - last - 1;
-						switch (count) {
-						case 0:
+						if (count == 0) {
 							return false;	// nothing to replace {} with
-						case 1:
-							if (std::isdigit(a_key[off])) {	// intended for skyui
-								return false;
-							}
-							break;
-						default:
-							break;
 						}
 						auto subStr = a_key.substr(off, count);
 						a_queue.push(GetLocalizationInternal(subStr));

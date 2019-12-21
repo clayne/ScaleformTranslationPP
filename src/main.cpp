@@ -1,17 +1,33 @@
-﻿#include "skse64/PluginAPI.h"  // PluginHandle, SKSEMessagingInterface, SKSEInterface, PluginInfo, SKSETaskInterface, SKSESerializationInterface
-#include "skse64_common/skse_version.h"  // RUNTIME_VERSION
+﻿#include "skse64_common/skse_version.h"
 
-#include <exception> // exception
-#include <locale>  // locale
+#include <clocale>
+#include <locale>
 
-#include <clocale>  // setlocale
-
-#include "Hooks.h"  // InstallHooks
-#include "LocaleManager.h"  // LocaleManager
-#include "version.h"  // STPP_VERSION_MAJOR
+#include "Events.h"
+#include "Hooks.h"
+#include "version.h"
 
 #include "RE/Skyrim.h"
 #include "SKSE/API.h"
+
+
+namespace
+{
+	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
+	{
+		switch (a_msg->type) {
+		case SKSE::MessagingInterface::kInputLoaded:
+			{
+				auto mm = RE::MenuManager::GetSingleton();
+				auto menuSink = Events::MenuOpenCloseEventHandler::GetSingleton();
+				mm->AddEventSink(menuSink);
+
+				Hooks::Install();
+			}
+			break;
+		}
+	}
+}
 
 
 extern "C" {
@@ -36,11 +52,10 @@ extern "C" {
 		}
 
 		switch (a_skse->RuntimeVersion()) {
-		case RUNTIME_VERSION_1_5_73:
-		case RUNTIME_VERSION_1_5_80:
+		case RUNTIME_VERSION_1_5_97:
 			break;
 		default:
-			_FATALERROR("Unsupported runtime version %08X!\n", a_skse->RuntimeVersion());
+			_FATALERROR("Unsupported runtime version %s!\n", a_skse->UnmangledRuntimeVersion().c_str());
 			return false;
 		}
 
@@ -56,8 +71,14 @@ extern "C" {
 			return false;
 		}
 
-		InstallHooks();
-		_MESSAGE("Hooks installed");
+		if (!SKSE::AllocBranchTrampoline(1024 * 1)) {
+			return false;
+		}
+
+		auto messaging = SKSE::GetMessagingInterface();
+		if (!messaging->RegisterListener("SKSE", MessageHandler)) {
+			return false;
+		}
 
 		return true;
 	}
