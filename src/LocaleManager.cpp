@@ -11,7 +11,7 @@
 #include "RE/Skyrim.h"
 
 
-std::wstring LocaleManager::ConvertStringToWstring(const std::string& a_str)
+std::wstring LocaleManager::ConvertStringToWString(const std::string& a_str)
 {
 	if (a_str.empty()) {
 		return std::wstring();
@@ -61,11 +61,11 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 }
 
 
-LocaleManager::LocaleManager(const RE::BSScaleformTranslator::TranslationTable& a_translationTable) :
+LocaleManager::LocaleManager(const RE::BSTranslator& a_translator) :
 	_localizations_ENG(),
 	_localizations_LOC()
 {
-	LoadLocalizationMap(a_translationTable);
+	LoadLocalizationMap(a_translator);
 	LoadLocalizationStrings();
 }
 
@@ -100,7 +100,7 @@ std::wstring LocaleManager::GetLocalization(std::wstring a_key)
 
 std::string LocaleManager::GetLocalization(std::string a_key)
 {
-	auto str = ConvertStringToWstring(a_key);
+	auto str = ConvertStringToWString(a_key);
 	str = GetLocalization(str);
 	return ConvertWStringToString(str);
 }
@@ -120,7 +120,7 @@ void LocaleManager::LoadLocalizationStrings()
 	auto setting = RE::GetINISetting("sLanguage:General");
 	if (setting) {
 		auto u8Language = setting->GetString();
-		wLanguage = ConvertStringToWstring(u8Language);
+		wLanguage = ConvertStringToWString(u8Language);
 	}
 	pattern += wLanguage;
 	pattern += REGEX_POSTFIX;
@@ -139,14 +139,14 @@ void LocaleManager::LoadLocalizationStrings()
 }
 
 
-void LocaleManager::LoadLocalizationMap(const RE::BSScaleformTranslator::TranslationTable& a_translationTable)
+void LocaleManager::LoadLocalizationMap(const RE::BSTranslator& a_translator)
 {
 	auto& localizations = GetLocalizationMap();
-	localizations.reserve(a_translationTable.size());
+	localizations.reserve(a_translator.translationMap.size());
 	std::wstring key;
 	std::wstring value;
 	std::optional<std::wstring> sanitizedKey;
-	for (auto& entry : a_translationTable) {
+	for (auto& entry : a_translator.translationMap) {
 		key = entry.first;
 		sanitizedKey = SanitizeKey(key);
 		if (sanitizedKey) {

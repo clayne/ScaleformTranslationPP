@@ -14,11 +14,11 @@
 class LocaleManager : public RE::GFxTranslator
 {
 public:
-	static std::wstring ConvertStringToWstring(const std::string& a_str);
+	static std::wstring ConvertStringToWString(const std::string& a_str);
 	static std::string ConvertWStringToString(const std::wstring& a_str);
 
 	LocaleManager() = delete;
-	LocaleManager(const RE::BSScaleformTranslator::TranslationTable& a_translationTable);
+	LocaleManager(const RE::BSTranslator& a_translator);
 	LocaleManager(const LocaleManager&) = default;
 	LocaleManager(LocaleManager&&) = default;
 	virtual ~LocaleManager() = default;
@@ -38,7 +38,7 @@ private:
 
 
 	void LoadLocalizationStrings();
-	void LoadLocalizationMap(const RE::BSScaleformTranslator::TranslationTable& a_translationTable);
+	void LoadLocalizationMap(const RE::BSTranslator& a_translator);
 	void FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english);
 	void ReadFromFile(const std::filesystem::path& a_path, bool a_english);
 	LocalizationMap& GetLocalizationMap();

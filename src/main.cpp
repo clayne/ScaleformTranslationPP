@@ -1,6 +1,4 @@
-﻿#include "skse64_common/skse_version.h"
-
-#include <clocale>
+﻿#include <clocale>
 #include <locale>
 
 #include "Events.h"
@@ -18,9 +16,9 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kInputLoaded:
 			{
-				auto mm = RE::MenuManager::GetSingleton();
+				auto ui = RE::UI::GetSingleton();
 				auto menuSink = Events::MenuOpenCloseEventHandler::GetSingleton();
-				mm->AddEventSink(menuSink);
+				ui->AddEventSink(menuSink);
 
 				Hooks::Install();
 			}
@@ -39,6 +37,7 @@ extern "C" {
 		SKSE::Logger::SetPrintLevel(SKSE::Logger::Level::kDebugMessage);
 		SKSE::Logger::SetFlushLevel(SKSE::Logger::Level::kDebugMessage);
 		SKSE::Logger::UseLogStamp(true);
+		SKSE::Logger::TrackTrampolineStats(true);
 
 		_MESSAGE("ScaleformTranslationPP v%s", STPP_VERSION_VERSTRING);
 
@@ -71,7 +70,7 @@ extern "C" {
 			return false;
 		}
 
-		if (!SKSE::AllocBranchTrampoline(1024 * 1)) {
+		if (!SKSE::AllocTrampoline(1 << 10)) {
 			return false;
 		}
 
