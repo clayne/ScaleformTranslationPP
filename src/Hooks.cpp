@@ -36,17 +36,15 @@ namespace Hooks
 
 			static void InstallHooks()
 			{
-				// E8 ? ? ? ? 84 C0 74 1F E8 ? ? ? ?
-				REL::Offset<std::uintptr_t> target(0x005AE010 + 0xA08);	// 1_5_97
+				REL::Offset<std::uintptr_t> target(REL::ID(35548), 0xA08);
 				auto trampoline = SKSE::GetTrampoline();
-				_ctor = trampoline->Write5CallEx<Ctor_t*>(target.GetAddress(), Ctor_f);
+				_ctor = trampoline->Write5CallEx(target.GetAddress(), &BSScaleformMovieLoaderEx::Ctor);
 				_MESSAGE("Installed hooks for (%s)", typeid(BSScaleformMovieLoaderEx).name());
 			}
 
 		private:
-			inline static auto Ctor_f = &BSScaleformMovieLoaderEx::Ctor;
-			using Ctor_t = function_type_t<decltype(Ctor_f)>;
-			inline static Ctor_t* _ctor = 0;
+			using Ctor_t = decltype(&BSScaleformMovieLoaderEx::Ctor);
+			static inline REL::Function<Ctor_t> _ctor;
 		};
 	}
 

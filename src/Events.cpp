@@ -10,13 +10,13 @@ namespace Events
 	}
 
 
-	auto MenuOpenCloseEventHandler::ReceiveEvent(RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource)
+	auto MenuOpenCloseEventHandler::ProcessEvent(const RE::MenuOpenCloseEvent* a_event, [[maybe_unused]] RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource)
 		-> EventResult
 	{
 		auto uiStr = RE::InterfaceStrings::GetSingleton();
-		if (a_event && a_event->isOpening && a_event->menuName == uiStr->journalMenu) {
-			auto mm = RE::MenuManager::GetSingleton();
-			auto journal = mm->GetMenu(uiStr->journalMenu);
+		if (a_event && a_event->opening && a_event->menuName == uiStr->journalMenu) {
+			auto ui = RE::UI::GetSingleton();
+			auto journal = ui->GetMenu(uiStr->journalMenu);
 			if (journal && journal->view) {
 				journal->view->SetState(RE::GFxState::StateType::kTranslator, _bethImpl.get());
 			}

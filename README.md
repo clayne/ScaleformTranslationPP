@@ -3,7 +3,6 @@
 This plugin enables native translation nesting present within SkyUI, as well as English fallbacks
 
 ## Build Dependencies
-* [SKSE64](https://skse.silverlock.org/)
 * [CommonLibSSE](https://github.com/Ryan-rsm-McKenzie/CommonLibSSE)
 
 ## End User Dependencies
