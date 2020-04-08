@@ -28,7 +28,8 @@ namespace
 }
 
 
-extern "C" {
+extern "C"
+{
 	bool SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 	{
 		std::setlocale(LC_ALL, "");
@@ -51,7 +52,7 @@ extern "C" {
 		}
 
 		auto ver = a_skse->RuntimeVersion();
-		if (ver <= SKSE::RUNTIME_1_5_39) {
+		if (ver < SKSE::RUNTIME_1_5_39) {
 			_FATALERROR("Unsupported runtime version %s!", ver.GetString().c_str());
 			return false;
 		}

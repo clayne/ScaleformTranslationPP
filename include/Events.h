@@ -13,7 +13,7 @@ namespace Events
 
 		static MenuOpenCloseEventHandler* GetSingleton();
 
-		virtual	EventResult ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource) override;
+		virtual EventResult ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource) override;
 
 		void SetBethTranslator(RE::GPtr<RE::GFxTranslator>&& a_translator);
 
@@ -21,7 +21,8 @@ namespace Events
 		MenuOpenCloseEventHandler() = default;
 		MenuOpenCloseEventHandler(const MenuOpenCloseEventHandler&) = delete;
 		MenuOpenCloseEventHandler(MenuOpenCloseEventHandler&&) = delete;
-		virtual ~MenuOpenCloseEventHandler() = default;
+
+		virtual ~MenuOpenCloseEventHandler();
 
 		MenuOpenCloseEventHandler& operator=(const MenuOpenCloseEventHandler&) = delete;
 		MenuOpenCloseEventHandler& operator=(MenuOpenCloseEventHandler&&) = delete;

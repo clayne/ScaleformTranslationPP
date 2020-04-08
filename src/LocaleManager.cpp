@@ -17,12 +17,12 @@ std::wstring LocaleManager::ConvertStringToWString(const std::string& a_str)
 		return std::wstring();
 	}
 
-	auto size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), NULL, 0);
+	auto size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0);
 	bool err = size == 0;
 	if (!err) {
 		std::wstring strTo;
 		strTo.resize(size);
-		err = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), a_str.length(), strTo.data(), size) == 0;
+		err = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size) == 0;
 		if (!err) {
 			return strTo;
 		}
@@ -42,12 +42,12 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 		return std::string();
 	}
 
-	auto size = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), NULL, 0, NULL, NULL);
+	auto size = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0, nullptr, nullptr);
 	bool err = size == 0;
 	if (!err) {
 		std::string strTo;
 		strTo.resize(size);
-		err = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), a_str.length(), strTo.data(), size, NULL, NULL) == 0;
+		err = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size, nullptr, nullptr) == 0;
 		if (!err) {
 			return strTo;
 		}
@@ -314,7 +314,7 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 						auto off = last + 1;
 						auto count = pos - last - 1;
 						if (count == 0) {
-							return false;	// nothing to replace {} with
+							return false;  // nothing to replace {} with
 						}
 						auto subStr = a_key.substr(off, count);
 						a_queue.push(GetLocalizationInternal(subStr));

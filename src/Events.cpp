@@ -30,4 +30,10 @@ namespace Events
 	{
 		_bethImpl = std::move(a_translator);
 	}
+
+
+	MenuOpenCloseEventHandler::~MenuOpenCloseEventHandler()
+	{
+		memzero(std::addressof(_bethImpl));	 // avoid crash in static dtor
+	}
 }
