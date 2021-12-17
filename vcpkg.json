@@ -1,0 +1,14 @@
+{
+  "name": "scaleformtranslationpp",
+  "version-string": "1.4.1",
+  "description": "An example project built using CommonLibSSE",
+  "homepage": "This plugin enables native translation nesting present within SkyUI, as well as English fallbacks",
+  "license": "MIT",
+  "dependencies": [
+    "boost-atomic",
+    "boost-stl-interfaces",
+    "rsm-binary-io",
+    "span-lite",
+    "spdlog"
+  ]
+}

@@ -17,8 +17,8 @@ namespace Events
 		if (a_event && a_event->opening && a_event->menuName == uiStr->journalMenu) {
 			auto ui = RE::UI::GetSingleton();
 			auto journal = ui->GetMenu(uiStr->journalMenu);
-			if (journal && journal->view) {
-				journal->view->SetState(RE::GFxState::StateType::kTranslator, _bethImpl.get());
+			if (journal && journal->uiMovie) {
+				journal->uiMovie->SetState(RE::GFxState::StateType::kTranslator, _bethImpl.get());
 			}
 		}
 
@@ -34,6 +34,6 @@ namespace Events
 
 	MenuOpenCloseEventHandler::~MenuOpenCloseEventHandler()
 	{
-		memzero(std::addressof(_bethImpl));	 // avoid crash in static dtor
+		SKSE::stl::memzero(std::addressof(_bethImpl));	 // avoid crash in static dtor
 	}
 }

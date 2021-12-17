@@ -1,35 +1,30 @@
 #include "LocaleManager.h"
 
 #include <codecvt>
-#include <filesystem>
-#include <fstream>
-#include <queue>
-#include <regex>
-#include <stack>
-#include <string>
-
+#include <SKSE/Impl/WinAPI.h>
+#include <windows.h>
 #include "RE/Skyrim.h"
 
-
+using namespace SKSE::WinAPI;
 std::wstring LocaleManager::ConvertStringToWString(const std::string& a_str)
 {
 	if (a_str.empty()) {
 		return std::wstring();
 	}
 
-	auto size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0);
+	auto size = SKSE::WinAPI::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0);
 	bool err = size == 0;
 	if (!err) {
 		std::wstring strTo;
 		strTo.resize(size);
-		err = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size) == 0;
+		err = SKSE::WinAPI::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size) == 0;
 		if (!err) {
 			return strTo;
 		}
 	}
 
 	if (err) {
-		_ERROR("MultiByteToWideChar failed with error code (%i)", GetLastError());
+		logger::error("MultiByteToWideChar failed with error code (%i)", GetLastError());
 	}
 
 	return std::wstring();
@@ -42,19 +37,19 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 		return std::string();
 	}
 
-	auto size = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0, nullptr, nullptr);
+	auto size = SKSE::WinAPI::WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), nullptr, 0, nullptr, nullptr);
 	bool err = size == 0;
 	if (!err) {
 		std::string strTo;
 		strTo.resize(size);
-		err = WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size, nullptr, nullptr) == 0;
+		err = SKSE::WinAPI::WideCharToMultiByte(CP_UTF8, 0, a_str.c_str(), static_cast<int>(a_str.length()), strTo.data(), size, nullptr, nullptr) == 0;
 		if (!err) {
 			return strTo;
 		}
 	}
 
 	if (err) {
-		_ERROR("WideCharToMultiByte failed with error code (%i)", GetLastError());
+		logger::error("WideCharToMultiByte failed with error code (%i)", GetLastError());
 	}
 
 	return std::string();
@@ -87,7 +82,7 @@ void LocaleManager::Dump()
 	for (auto& pair : GetLocalizationMap()) {
 		key = ConvertWStringToString(pair.first);
 		value = ConvertWStringToString(pair.second);
-		_DMESSAGE("%s: %s", key.c_str(), value.c_str());
+		logger::debug("%s: %s", key.c_str(), value.c_str());
 	}
 }
 
@@ -187,7 +182,7 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	std::wstring key;
 	std::wstring value;
 	if (!inFile.is_open()) {
-		_ERROR("Failed to open file \"%s\"!\n", a_path.string().c_str());
+		logger::error("Failed to open file \"%s\"!\n", a_path.string().c_str());
 		return;
 	}
 

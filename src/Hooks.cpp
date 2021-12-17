@@ -20,8 +20,8 @@ namespace Hooks
 		public:
 			BSScaleformMovieLoaderEx* Ctor()
 			{
-				_ctor(this);
-
+				REL::Relocation<Ctor_t> func{ _ctor };
+				func(this);
 				auto bethTranslator = loader->GetState<RE::BSScaleformTranslator>(RE::GFxState::StateType::kTranslator);
 
 				auto newTranslator = new LocaleManager(bethTranslator->translator);
@@ -36,15 +36,21 @@ namespace Hooks
 
 			static void InstallHooks()
 			{
-				REL::Offset<std::uintptr_t> target(REL::ID(35548), 0xA08);
-				auto trampoline = SKSE::GetTrampoline();
-				_ctor = trampoline->Write5CallEx(target.GetAddress(), &BSScaleformMovieLoaderEx::Ctor);
-				_MESSAGE("Installed hooks for (%s)", typeid(BSScaleformMovieLoaderEx).name());
+				REL::Relocation<std::uintptr_t> target{ REL::ID(35548),
+#ifndef SKYRIMVR
+					0xA08
+#else
+					0xACE
+#endif
+				};
+				auto& trampoline = SKSE::GetTrampoline();
+				_ctor = trampoline.write_call<5>(target.address(), &BSScaleformMovieLoaderEx::Ctor);
+				logger::info("Installed hooks for ({})", typeid(BSScaleformMovieLoaderEx).name());
 			}
 
 		private:
 			using Ctor_t = decltype(&BSScaleformMovieLoaderEx::Ctor);
-			static inline REL::Function<Ctor_t> _ctor;
+			static inline std::uintptr_t _ctor;
 		};
 	}
 
@@ -52,6 +58,6 @@ namespace Hooks
 	void Install()
 	{
 		BSScaleformMovieLoaderEx::InstallHooks();
-		_MESSAGE("Installed all hooks");
+		logger::info("Installed all hooks");
 	}
 }
