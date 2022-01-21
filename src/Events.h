@@ -2,14 +2,12 @@
 
 #include "RE/Skyrim.h"
 
-
 namespace Events
 {
 	class MenuOpenCloseEventHandler : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
 	{
 	public:
 		using EventResult = RE::BSEventNotifyControl;
-
 
 		static MenuOpenCloseEventHandler* GetSingleton();
 
@@ -26,7 +24,6 @@ namespace Events
 
 		MenuOpenCloseEventHandler& operator=(const MenuOpenCloseEventHandler&) = delete;
 		MenuOpenCloseEventHandler& operator=(MenuOpenCloseEventHandler&&) = delete;
-
 
 		RE::GPtr<RE::GFxTranslator> _bethImpl;
 	};

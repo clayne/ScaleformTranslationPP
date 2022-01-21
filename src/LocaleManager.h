@@ -1,16 +1,5 @@
 #pragma once
 
-#include <filesystem>
-#include <optional>
-#include <queue>
-#include <regex>
-#include <stack>
-#include <string>
-#include <unordered_map>
-
-#include "RE/Skyrim.h"
-
-
 class LocaleManager : public RE::GFxTranslator
 {
 public:
@@ -36,7 +25,6 @@ private:
 	using LocalizationMap = std::unordered_map<std::wstring, std::wstring>;
 	using size_type = std::wstring::size_type;
 
-
 	void LoadLocalizationStrings();
 	void LoadLocalizationMap(const RE::BSTranslator& a_translator);
 	void FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english);
@@ -47,7 +35,6 @@ private:
 	bool GetNestedLocalizations(const std::wstring& a_key, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
 	std::optional<std::wstring> FindLocalization(const std::wstring& a_key);
 	bool InsertLocalizations(std::wstring& a_localization, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue);
-
 
 	LocalizationMap _localizations_ENG;
 	LocalizationMap _localizations_LOC;

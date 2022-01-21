@@ -1,57 +1,48 @@
 #include "Hooks.h"
 
-#include <typeinfo>
-
-#include "RE/Skyrim.h"
-#include "REL/Relocation.h"
-#include "SKSE/API.h"
-#include "SKSE/Trampoline.h"
-
 #include "Events.h"
 #include "LocaleManager.h"
-
 
 namespace Hooks
 {
 	namespace
 	{
-		class BSScaleformMovieLoaderEx : public RE::BSScaleformManager
+		class BSScaleformMovieLoaderEx :
+			public RE::BSScaleformManager
 		{
 		public:
 			BSScaleformMovieLoaderEx* Ctor()
 			{
 				_ctor(this);
 
-				auto bethTranslator = loader->GetState<RE::BSScaleformTranslator>(RE::GFxState::StateType::kTranslator);
+				const auto bethTranslator = loader->GetState<RE::BSScaleformTranslator>(RE::GFxState::StateType::kTranslator);
 
-				auto newTranslator = new LocaleManager(bethTranslator->translator);
+				const auto newTranslator = new LocaleManager(bethTranslator->translator);
 				loader->SetState(RE::GFxState::StateType::kTranslator, newTranslator);
 
-				auto menuSink = Events::MenuOpenCloseEventHandler::GetSingleton();
+				const auto menuSink = Events::MenuOpenCloseEventHandler::GetSingleton();
 				menuSink->SetBethTranslator(std::move(bethTranslator));
 
 				return this;
 			}
 
-
 			static void InstallHooks()
 			{
-				REL::Offset<std::uintptr_t> target(REL::ID(35548), 0xA08);
-				auto trampoline = SKSE::GetTrampoline();
-				_ctor = trampoline->Write5CallEx(target.GetAddress(), &BSScaleformMovieLoaderEx::Ctor);
-				_MESSAGE("Installed hooks for (%s)", typeid(BSScaleformMovieLoaderEx).name());
+				REL::Relocation<std::uintptr_t> target{ REL::ID(36547), 0xE72 };
+				auto& trampoline = SKSE::GetTrampoline();
+				_ctor = trampoline.write_call<5>(target.address(), &BSScaleformMovieLoaderEx::Ctor);
+				logger::debug("Installed hooks for ({})", typeid(BSScaleformMovieLoaderEx).name());
 			}
 
 		private:
 			using Ctor_t = decltype(&BSScaleformMovieLoaderEx::Ctor);
-			static inline REL::Function<Ctor_t> _ctor;
+			static inline REL::Relocation<Ctor_t> _ctor;
 		};
 	}
-
 
 	void Install()
 	{
 		BSScaleformMovieLoaderEx::InstallHooks();
-		_MESSAGE("Installed all hooks");
+		logger::debug("Installed all hooks");
 	}
 }

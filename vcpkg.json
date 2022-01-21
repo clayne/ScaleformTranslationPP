@@ -1,0 +1,10 @@
+{
+  "name": "example",
+  "version": "1",
+  "dependencies": [
+    "boost-stl-interfaces",
+    "fmt",
+    "rsm-binary-io",
+    "spdlog"
+  ]
+}

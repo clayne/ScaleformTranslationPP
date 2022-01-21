@@ -1,15 +1,6 @@
 #include "LocaleManager.h"
 
-#include <codecvt>
-#include <filesystem>
-#include <fstream>
-#include <queue>
-#include <regex>
-#include <stack>
-#include <string>
-
-#include "RE/Skyrim.h"
-
+#include <Windows.h>
 
 std::wstring LocaleManager::ConvertStringToWString(const std::string& a_str)
 {
@@ -29,12 +20,11 @@ std::wstring LocaleManager::ConvertStringToWString(const std::string& a_str)
 	}
 
 	if (err) {
-		_ERROR("MultiByteToWideChar failed with error code (%i)", GetLastError());
+		logger::error("MultiByteToWideChar failed with error code ({})", GetLastError());
 	}
 
 	return std::wstring();
 }
-
 
 std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 {
@@ -54,12 +44,11 @@ std::string LocaleManager::ConvertWStringToString(const std::wstring& a_str)
 	}
 
 	if (err) {
-		_ERROR("WideCharToMultiByte failed with error code (%i)", GetLastError());
+		logger::error("WideCharToMultiByte failed with error code ({})", GetLastError());
 	}
 
 	return std::string();
 }
-
 
 LocaleManager::LocaleManager(const RE::BSTranslator& a_translator) :
 	_localizations_ENG(),
@@ -68,7 +57,6 @@ LocaleManager::LocaleManager(const RE::BSTranslator& a_translator) :
 	LoadLocalizationMap(a_translator);
 	LoadLocalizationStrings();
 }
-
 
 void LocaleManager::Translate(TranslateInfo* a_translateInfo)
 {
@@ -79,7 +67,6 @@ void LocaleManager::Translate(TranslateInfo* a_translateInfo)
 	}
 }
 
-
 void LocaleManager::Dump()
 {
 	std::string key;
@@ -87,16 +74,14 @@ void LocaleManager::Dump()
 	for (auto& pair : GetLocalizationMap()) {
 		key = ConvertWStringToString(pair.first);
 		value = ConvertWStringToString(pair.second);
-		_DMESSAGE("%s: %s", key.c_str(), value.c_str());
+		logger::debug("{}: {}", key.c_str(), value.c_str());
 	}
 }
-
 
 std::wstring LocaleManager::GetLocalization(std::wstring a_key)
 {
 	return GetLocalizationInternal(a_key);
 }
-
 
 std::string LocaleManager::GetLocalization(std::string a_key)
 {
@@ -104,7 +89,6 @@ std::string LocaleManager::GetLocalization(std::string a_key)
 	str = GetLocalization(str);
 	return ConvertWStringToString(str);
 }
-
 
 void LocaleManager::LoadLocalizationStrings()
 {
@@ -138,7 +122,6 @@ void LocaleManager::LoadLocalizationStrings()
 	}
 }
 
-
 void LocaleManager::LoadLocalizationMap(const RE::BSTranslator& a_translator)
 {
 	auto& localizations = GetLocalizationMap();
@@ -157,7 +140,6 @@ void LocaleManager::LoadLocalizationMap(const RE::BSTranslator& a_translator)
 	}
 }
 
-
 void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
 {
 	std::error_code err;
@@ -174,7 +156,6 @@ void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wr
 	}
 }
 
-
 void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_english)
 {
 	constexpr auto CVT_MODE = std::codecvt_mode(std::little_endian | std::consume_header);
@@ -187,7 +168,7 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	std::wstring key;
 	std::wstring value;
 	if (!inFile.is_open()) {
-		_ERROR("Failed to open file \"%s\"!\n", a_path.string().c_str());
+		logger::error("Failed to open file \"{}\"!", a_path.string().c_str());
 		return;
 	}
 
@@ -217,12 +198,10 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	}
 }
 
-
 LocaleManager::LocalizationMap& LocaleManager::GetLocalizationMap()
 {
 	return _localizations_LOC.empty() ? _localizations_ENG : _localizations_LOC;
 }
-
 
 std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 {
@@ -252,7 +231,6 @@ std::wstring LocaleManager::GetLocalizationInternal(const std::wstring& a_key)
 	InsertLocalizations(*localization, stack, queue);
 	return *localization;
 }
-
 
 std::optional<std::wstring> LocaleManager::SanitizeKey(std::wstring a_key)
 {
@@ -294,7 +272,6 @@ std::optional<std::wstring> LocaleManager::SanitizeKey(std::wstring a_key)
 	return std::make_optional(a_key);
 }
 
-
 bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue)
 {
 	for (size_type pos = 0; pos < a_key.size(); ++pos) {
@@ -331,7 +308,6 @@ bool LocaleManager::GetNestedLocalizations(const std::wstring& a_key, std::stack
 	return true;
 }
 
-
 std::optional<std::wstring> LocaleManager::FindLocalization(const std::wstring& a_key)
 {
 	auto& localizations = GetLocalizationMap();
@@ -349,7 +325,6 @@ std::optional<std::wstring> LocaleManager::FindLocalization(const std::wstring& 
 
 	return std::make_optional(it->second);
 }
-
 
 bool LocaleManager::InsertLocalizations(std::wstring& a_localization, std::stack<size_type>& a_stack, std::queue<std::wstring>& a_queue)
 {
