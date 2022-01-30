@@ -28,7 +28,8 @@ namespace Hooks
 
 			static void InstallHooks()
 			{
-				REL::Relocation<std::uintptr_t> target{ REL::ID(36547), 0xE72 };  // TODO: offset keeps moving in AE
+				REL::Relocation<std::uintptr_t> target{ REL::ID(36547), 0xE91 };
+				REL::make_pattern<"E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ??">().match_or_fail(target.address());
 				auto& trampoline = SKSE::GetTrampoline();
 				_ctor = trampoline.write_call<5>(target.address(), &BSScaleformMovieLoaderEx::Ctor);
 				logger::debug("Installed hooks for ({})", typeid(BSScaleformMovieLoaderEx).name());
